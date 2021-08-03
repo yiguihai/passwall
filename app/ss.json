@@ -1,0 +1,45 @@
+{
+    "locals": [
+        {
+            "protocol": "redir",
+            "mode": "tcp_and_udp",
+            "tcp_redir": "tproxy",
+            "udp_redir": "tproxy",
+            "local_address": "127.0.0.1",
+            "local_port": 60080,
+            "local_udp_address": "127.0.0.1",
+            "local_udp_port": 60080
+        },
+        {
+            "protocol": "dns",
+            "local_address": "0.0.0.0",
+            "local_port": 60053,
+            "local_dns_address": "223.5.5.5",
+            "local_dns_port": 53,
+            "remote_dns_address": "1.1.1.1",
+            "remote_dns_port": 53
+        }
+    ],
+    "servers": [
+        {
+            "disabled": false,
+            "address": "172.245.8.20",
+            "port": 33277,
+            "method": "none",
+            "password": "NjU2ODkyMmUtN2Uw",
+            "plugin": "",
+            "plugin_opts": "",
+            "timeout": 7200,
+            "tcp_weight": 1.0,
+            "udp_weight": 1.0,
+        }
+    ],
+    "udp_timeout": 300,
+    "udp_max_associations": 512,
+    "dns": "cloudflare_https",
+    "mode": "tcp_only",
+    "no_delay": false,
+    "keep_alive": 15,
+    "nofile": 10240,
+    "ipv6_first": false
+}

@@ -6,26 +6,19 @@ PKG_RELEASE:=1
 
 include $(INCLUDE_DIR)/package.mk
 
-
 define Package/$(PKG_NAME)
 	SECTION:=luci
 	CATEGORY:=LuCI
 	SUBMENU:=3. Applications
 	TITLE:=LuCI Support for FuckGFW Bash Script
-	DEPENDS:=+bash +ipset +curl +jsonfilter +libpthread +libopenssl +luci-compat
-# +iptables-mod-tproxy
+	DEPENDS:=+passwall-plus 
+	EXTRA_DEPENDS:=bash, ipset, iptables-mod-tproxy, curl, jsonfilter, libpthread, libopenssl, coreutils, luci-base, luci-compat
 	PKGARCH:=all
 	MAINTAINER:=yiguihai
 endef
 
 define Package/$(PKG_NAME)/description
 	This is probably the best proxy script.
-endef
-
-define Build/Configure
-endef
-
-define Build/Compile
 endef
 
 define Package/$(PKG_NAME)/conffiles
@@ -43,16 +36,15 @@ define Package/$(PKG_NAME)/install
 	po2lmo ./po/zh-cn/passwall.zh-cn.po $(1)/usr/lib/lua/luci/i18n/passwall.zh-cn.lmo
 endef
 
-define Package/$(PKG_NAME)/prerm
+define Package/$(PKG_NAME)/preinst
 #!/bin/sh
-if [ -z "$${IPKG_INSTROOT}" ]; then
-  /etc/init.d/passwall disable
-  /etc/init.d/passwall stop  
-  uci -q batch <<-EOF >/dev/null
-	delete ucitrack.@passwall[-1]
-	commit ucitrack
-EOF
-  rm -rf /tmp/luci*
+if [ -z "${IPKG_INSTROOT}" ]; then
+	for i in obfs-local sslocal kcptun-plugin v2ray-plugin; do
+		if [ ! -x /usr/bin/$i ]; then
+			echo "No command $i found"
+			exit 127
+		fi
+	done
 fi
 exit 0
 endef
@@ -64,6 +56,20 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
     chmod +x /etc/init.d/passwall
   fi
   /etc/init.d/passwall enable
+  rm -rf /tmp/luci*
+fi
+exit 0
+endef
+
+define Package/$(PKG_NAME)/prerm
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+  /etc/init.d/passwall disable
+  /etc/init.d/passwall stop  
+  uci -q batch <<-EOF >/dev/null
+	delete ucitrack.@passwall[-1]
+	commit ucitrack
+EOF
   rm -rf /tmp/luci*
 fi
 exit 0

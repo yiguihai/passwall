@@ -1,0 +1,11 @@
+--- /sdcard/main.go
++++ /sdcard/main.go.bak
+@@ -121,7 +121,7 @@
+ 			Name:   "key",
+ 			Value:  "it's a secrect",
+ 			Usage:  "pre-shared secret between client and server",
+-			EnvVars: []string{"KCPTUN_KEY"},
++			EnvVar: "KCPTUN_KEY",
+ 		},
+ 		&cli.StringFlag{
+ 			Name:  "crypt",
