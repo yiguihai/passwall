@@ -67,7 +67,6 @@ add_rule() {
 	ip -4 rule add fwmark 0x2333/0x2333 table 100
 	#https://m.itbiancheng.com/linux/4961.html
 	ipset create sslan4 hash:net family inet -exist
-	ipset create chnip hash:net family inet -exist
 	iptables -w -t mangle -N SS
 	#iptables -w -t mangle -A SS -p udp -j LOG --log-prefix '** SUSPECT ** '
 	for i in ${lan_ipv4[@]}; do
@@ -76,6 +75,7 @@ add_rule() {
 	if [ ! -s /tmp/chnip.ipset ]; then
 		#有acl还不够必须再加上一个中国路由表，因为流量进入sslocal分流后不会再经过nat表的PREROUTING链而是从OUTPUT链发出所以造成网易云解锁失败，(大概是这样)
 		echo "正在添加ipset规则..."
+		ipset create chnip hash:net family inet -exist
 		for i in $(curl -s https://proxy.freecdn.workers.dev/?url=https://raw.githubusercontent.com/17mon/china_ip_list/master/china_ip_list.txt | grep -oE '([0-9]+\.){3}[0-9]+?\/[0-9]{1,2}'); do
 			ipset add chnip $i
 		done
