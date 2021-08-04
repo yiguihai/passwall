@@ -17,7 +17,7 @@ echo 开始编译 kcptun
 cd -
 git clone --depth 1 https://github.com/xtaci/kcptun.git
 cd kcptun
-${6}/bin/go get -u github.com/shadowsocks/kcptun
+#${6}/bin/go get -u github.com/shadowsocks/kcptun
 ${6}/bin/go get -u ./...
 git clone --depth 1 https://github.com/shadowsocks/kcptun.git
 cd kcptun/client

@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=passwall-plus
-PKG_VERSION:=20210802
+PKG_VERSION:=$(shell date -u +%Y%m%d)
 PKG_RELEASE:=1
 
 PKG_LIBC:=musl
