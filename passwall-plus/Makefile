@@ -34,13 +34,14 @@ endef
 
 define Build/Prepare
 	chmod +x build.sh
+	cp -f main.go.patch /tmp
 	./build.sh ${PATH} $(ARCH)-unknown-linux-$(PKG_LIBC) $(TARGET_CROSS) $(PKG_BUILD_DIR) $(STAGING_DIR) $(STAGING_DIR_HOSTPKG) $(TARGET_CXX) $(TARGET_CC) $(GO_OS) $(GO_ARCH) $(STAGING_DIR_HOST)
 endef
 
 define Build/Compile
 	$(STAGING_DIR_HOST)/bin/upx --best --ultra-brute $(PKG_BUILD_DIR)/simple-obfs/src/obfs-local
 	$(STAGING_DIR_HOST)/bin/upx --best --ultra-brute $(PKG_BUILD_DIR)/shadowsocks-rust/target/$(ARCH)-unknown-linux-$(PKG_LIBC)/release/sslocal
-	$(STAGING_DIR_HOST)/bin/upx --best --ultra-brute $(PKG_BUILD_DIR)/kcptun/kcptun-plugin
+	$(STAGING_DIR_HOST)/bin/upx --best --ultra-brute $(PKG_BUILD_DIR)/kcptun/kcptun/client/kcptun-plugin
 	$(STAGING_DIR_HOST)/bin/upx --best --ultra-brute $(PKG_BUILD_DIR)/v2ray-plugin/v2ray-plugin
 endef
 
@@ -48,7 +49,7 @@ define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/shadowsocks-rust/target/$(ARCH)-unknown-linux-$(PKG_LIBC)/release/sslocal $(1)/usr/bin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/v2ray-plugin/v2ray-plugin $(1)/usr/bin/
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/kcptun/kcptun-plugin $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/kcptun/kcptun/client/kcptun-plugin $(1)/usr/bin/
 endef
 
 $(eval $(call BuildPackage,$(PKG_NAME)))
