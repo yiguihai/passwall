@@ -47,6 +47,7 @@ endef
 
 define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/simple-obfs/src/obfs-local $(1)/usr/bin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/shadowsocks-rust/target/$(ARCH)-unknown-linux-$(PKG_LIBC)/release/sslocal $(1)/usr/bin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/v2ray-plugin/v2ray-plugin $(1)/usr/bin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/kcptun/kcptun/client/kcptun-plugin $(1)/usr/bin/
