@@ -34,7 +34,6 @@ endef
 
 define Build/Prepare
 	chmod +x build.sh
-	cp -f main.go.patch /tmp/main.go.patch
 	./build.sh ${PATH} $(ARCH)-unknown-linux-$(PKG_LIBC) $(TARGET_CROSS) $(PKG_BUILD_DIR) $(STAGING_DIR) $(STAGING_DIR_HOSTPKG) $(TARGET_CXX) $(TARGET_CC) $(GO_OS) $(GO_ARCH) $(STAGING_DIR_HOST)
 endef
 

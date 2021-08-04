@@ -19,7 +19,7 @@ git clone --depth 1 https://github.com/xtaci/kcptun.git
 cd kcptun
 ${6}/bin/go get -u github.com/shadowsocks/kcptun
 ${6}/bin/go get -u ./...
-env CC=$8 CXX=$7 GO111MODULE=on CGO_ENABLED=1 GOOS=${9} GOARCH=${10} ${6}/bin/go build -mod=mod -ldflags "-X main.VERSION=$(date -u +%Y%m%d) -s -w" -gcflags "" -o kcptun-plugin github.com/shadowsocks/kcptun/server
+env CC=$8 CXX=$7 GO111MODULE=on CGO_ENABLED=1 GOOS=${9} GOARCH=${10} ${6}/bin/go build -mod=mod -ldflags "-X main.VERSION=$(date -u +%Y%m%d) -s -w" -gcflags "" -o kcptun-plugin github.com/shadowsocks/kcptun/client
 
 echo 开始编译 v2ray-plugin
 cd -

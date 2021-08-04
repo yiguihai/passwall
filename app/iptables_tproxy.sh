@@ -29,6 +29,23 @@ lan_ipv4=(
 wan_ifname=$(ip route get 8.8.8.8 | awk -- '{printf $5}')
 [ -z $wan_ifname ] && exit
 
+acl() {
+	if [ ! -s /tmp/bypass-china.acl ]; then
+		cat >/tmp/bypass-china.tmp <<EOF
+$(curl -s https://proxy.freecdn.workers.dev/?url=https://raw.githubusercontent.com/17mon/china_ip_list/master/china_ip_list.txt | grep -oP '([0-9]+\.){3}[0-9]+?\/[0-9]{1,2}')
+$(curl -s https://bgp.space/china.html | grep -oP '([0-9]+\.){3}[0-9]+?\/[0-9]{1,2}')
+$(curl -s https://bgp.space/china6.html | grep -oP '([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4}\/[0-9]{1,3}')
+EOF
+		sort /tmp/bypass-china.tmp | uniq -u >/tmp/bypass-china2.tmp
+		cat >/tmp/bypass-china.acl <<EOF
+[proxy_all]
+
+[bypass_list]
+$(cat /tmp/bypass-china2.tmp)
+EOF
+		rm -f /tmp/bypass-china.tmp /tmp/bypass-china2.tmp
+	fi
+}
 up() {
 	sslocal --daemonize --log-without-time --acl /tmp/bypass-china.acl --config /tmp/ss.json --daemonize-pid /tmp/ss.pid
 }
@@ -41,33 +58,34 @@ down() {
 }
 #有acl还不够必须再加上一个中国路由表，因为流量进入sslocal分流后不会再经过nat表的PREROUTING链而是从OUTPUT链发出所以造成网易云解锁失败，
 add_rule() {
+	acl
 	up
 	ip -4 route add local 0/0 dev lo table 100
 	ip -4 rule add fwmark 0x2333/0x2333 table 100
 	ipset create sslan4 hash:net family inet -exist
-	iptables -t mangle -N SS
-	#iptables -t mangle -A SS -p udp -j LOG --log-prefix '** SUSPECT ** '
+	iptables -w -t mangle -N SS
+	#iptables -w -t mangle -A SS -p udp -j LOG --log-prefix '** SUSPECT ** '
 	for i in ${lan_ipv4[@]}; do
 		ipset add sslan4 $i
 	done
 	#https://unix.stackexchange.com/questions/383521/find-all-ethernet-interface-and-associate-ip-address
 	#for i in $(ip -o -4 addr show | awk -- '{print $4}'); do
-	#iptables -t mangle -A SS -d $i -j RETURN
+	#iptables -w -t mangle -A SS -d $i -j RETURN
 	#done
-	iptables -t mangle -A SS -i $wan_ifname -j RETURN
-	iptables -t mangle -A SS -m set --match-set sslan4 dst -j RETURN
-	iptables -t mangle -A SS -p tcp -s 192.168.1.181 -j TPROXY --tproxy-mark 0x2333/0x2333 --on-ip 127.0.0.1 --on-port 60080
-	iptables -t mangle -A SS -p udp -s 192.168.1.181 -j TPROXY --tproxy-mark 0x2333/0x2333 --on-ip 127.0.0.1 --on-port 60080
-	iptables -t mangle -A PREROUTING -j SS
-	iptables -t nat -A PREROUTING -p udp -s 192.168.1.181 --dport 53 -j REDIRECT --to-ports 60053
+	iptables -w -t mangle -A SS -i $wan_ifname -j RETURN
+	iptables -w -t mangle -A SS -m set --match-set sslan4 dst -j RETURN
+	iptables -w -t mangle -A SS -p tcp -s 192.168.1.181 -j TPROXY --tproxy-mark 0x2333/0x2333 --on-ip 127.0.0.1 --on-port 60080
+	iptables -w -t mangle -A SS -p udp -s 192.168.1.181 -j TPROXY --tproxy-mark 0x2333/0x2333 --on-ip 127.0.0.1 --on-port 60080
+	iptables -w -t mangle -A PREROUTING -j SS
+	iptables -w -t nat -A PREROUTING -p udp -s 192.168.1.181 --dport 53 -j REDIRECT --to-ports 60053
 }
 del_rule() {
 	ip -4 route del local 0/0 dev lo table 100
 	ip -4 rule del fwmark 0x2333/0x2333 table 100
-	iptables -t mangle -D PREROUTING -j SS
-	iptables -t mangle -F SS
-	iptables -t mangle -X SS
-	iptables -t nat -D PREROUTING -p udp -s 192.168.1.181 --dport 53 -j REDIRECT --to-ports 60053
+	iptables -w -t mangle -D PREROUTING -j SS
+	iptables -w -t mangle -F SS
+	iptables -w -t mangle -X SS
+	iptables -w -t nat -D PREROUTING -p udp -s 192.168.1.181 --dport 53 -j REDIRECT --to-ports 60053
 	ipset destroy sslan4
 	down
 }
