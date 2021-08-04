@@ -25,7 +25,7 @@ patch -p0 main.go </tmp/main.go.patch
 env CC=$8 CXX=$7 GO111MODULE=on CGO_ENABLED=1 GOOS=${9} GOARCH=${10} ${6}/bin/go build -mod=mod -ldflags "-X main.VERSION=$(date -u +%Y%m%d) -s -w" -gcflags "" -o kcptun-plugin
 
 echo 开始编译 v2ray-plugin
-cd -
+cd ${4}
 git clone --depth 1 https://github.com/teddysun/v2ray-plugin.git
 cd v2ray-plugin
 ${6}/bin/go get -d -v ./...
