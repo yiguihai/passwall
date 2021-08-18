@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+#set -e
 
 if [[ $EUID -ne 0 ]]; then
 	echo "This script must be run as root" 1>&2
@@ -35,28 +35,22 @@ acl() {
 [proxy_all]
 
 [bypass_list]
+#第五人格防止跳国外服务器
+(?:^|\.)netease\.com$
+(?:^|\.)easebar\.com$
 $(curl -s https://bgp.space/china.html | grep -oE '([0-9]+\.){3}[0-9]+?\/[0-9]{1,2}')
 $(curl -s https://bgp.space/china6.html | grep -oE '([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4}\/[0-9]{1,3}')
 EOF
 	fi
 }
 up() {
-	sslocal --daemonize --log-without-time --acl /tmp/bypass-china.acl --config /tmp/ss.json --daemonize-pid /tmp/ss.pid
-	local cs=50 #5秒启动超时，太快了会报(ERROR failed to daemonize, unable to lock pid file)错误，需要等待完成
-	until [ -s /tmp/ss.pid ]; do
-		((cs--))
-		if [ ${cs:-0} -eq 0 ]; then
-			exit 127
-		else
-			sleep 1
-		fi
-	done
+	sslocal --daemonize --log-without-time --acl /tmp/bypass-china.acl --config /root/ss.json --daemonize-pid /tmp/ss.pid
+	sleep 2
 }
 down() {
 	if [ -s /tmp/ss.pid ]; then
 		read sspid </tmp/ss.pid
 		kill $sspid
-		#rm -f /tmp/ss.pid
 	fi
 }
 
@@ -73,7 +67,7 @@ add_rule() {
 		ipset add sslan4 $i
 	done
 	if [ ! -s /tmp/chnip.ipset ]; then
-		#有acl还不够必须再加上一个中国路由表，因为流量进入sslocal分流后不会再经过nat表的PREROUTING链而是从OUTPUT链发出所以造成网易云解锁失败，(大概是这样)
+		#流量没有经过nat表的PREROUTING链而是进入mangle表PREROUTING链后直接进入sslocal没有经过定向就被发出了所以造成网易云解锁失败
 		echo "正在添加ipset规则..."
 		ipset create chnip hash:net family inet -exist
 		for i in $(curl -s https://proxy.freecdn.workers.dev/?url=https://raw.githubusercontent.com/17mon/china_ip_list/master/china_ip_list.txt | grep -oE '([0-9]+\.){3}[0-9]+?\/[0-9]{1,2}'); do
